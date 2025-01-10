@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerInteraction : MonoBehaviour
 {
@@ -10,6 +11,7 @@ public class PlayerInteraction : MonoBehaviour
 	public bool hasBall = false;
 	public float forwardPower;
 	public float heightPower;
+	public Slider powerBar;
 
 	private void Start()
 	{
@@ -26,8 +28,14 @@ public class PlayerInteraction : MonoBehaviour
 
 	private void Update()
 	{
-		//Once player has ball and left mouse is clicked
-		if (Input.GetMouseButtonDown(0) && hasBall)
+		//Once player holds down left click pingpong throw power
+		if (Input.GetMouseButton(0) && hasBall)
+		{
+			forwardPower = Mathf.PingPong(Time.time * 10, 10);
+		}
+
+		//Once left click is released throw ball
+		if (Input.GetMouseButtonUp(0) && hasBall)
 		{
 			//Turn off pickup collider
 			pickupCollider.enabled = false;
@@ -37,7 +45,7 @@ public class PlayerInteraction : MonoBehaviour
 
 			//Add gravity back
 			basketball.GetComponent<Rigidbody>().useGravity = true;
-			
+
 			//Add forward and up forces to the ball
 			basketball.GetComponent<Rigidbody>().AddForce(playerPosition.transform.forward * forwardPower, ForceMode.Impulse);
 			basketball.GetComponent<Rigidbody>().AddForce(playerPosition.transform.up * heightPower, ForceMode.Impulse);
@@ -45,6 +53,17 @@ public class PlayerInteraction : MonoBehaviour
 			//Reset pickup collider
 			StartCoroutine(ResetCollider());
 		}
+
+		UpdatePowerBar();
+	}
+
+	private void UpdatePowerBar()
+	{
+		//Update value of slider with current forward power
+		powerBar.value = forwardPower;
+		
+		//Heightpower will always be 1 less then forward power
+		heightPower = forwardPower - 1;
 	}
 
 	private void OnTriggerStay(Collider other)
